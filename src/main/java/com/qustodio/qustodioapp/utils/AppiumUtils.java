@@ -1,0 +1,56 @@
+package com.qustodio.qustodioapp.utils;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.service.local.AppiumDriverLocalService;
+import io.appium.java_client.service.local.AppiumServiceBuilder;
+
+public abstract class AppiumUtils {
+
+	public AppiumDriverLocalService service;
+
+	public Double getFormattedAmount(String amount)
+	{
+		return Double.parseDouble(amount.substring(1));
+	}
+	
+	public List<HashMap<String, String>> getJsonData(String jsonFilePath) throws IOException {
+		// conver json file content to json string
+		String jsonContent = FileUtils.readFileToString(new File(jsonFilePath),StandardCharsets.UTF_8);
+
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readValue(jsonContent,
+				new TypeReference<List<HashMap<String, String>>>() {
+				});
+	}
+	
+	public AppiumDriverLocalService startAppiumServer(String ipAddress,int port)
+	{
+		 service = new AppiumServiceBuilder().withAppiumJS(new File("C://Users//Usuario//AppData//Roaming//npm//node_modules//appium//build//lib//main.js"))
+					.withIPAddress(ipAddress).usingPort(port).build();
+				service.start();
+				return service;
+	}
+	
+	public String getScreenshotPath(String testCaseName, AppiumDriver driver) throws IOException
+	{
+		File source = driver.getScreenshotAs(OutputType.FILE);
+		String destinationFile = System.getProperty("user.dir")+"//reports"+testCaseName+".png";
+		FileUtils.copyFile(source, new File(destinationFile));
+		return destinationFile;
+		//1. capture and place in folder //2. extent report pick file and attach to report
+	}
+
+	
+}
